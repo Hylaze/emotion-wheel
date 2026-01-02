@@ -1,20 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
 from matplotlib.colors import to_rgb
 
 def generate_shade(base_color, factor=0.2):
     """Lighten a color by mixing it with white."""
     base = to_rgb(base_color)
     return tuple((1 - factor) * c + factor for c in base)
-def sunburst(nodes, total=np.pi * 2, offset=0, level=0, ax=None, color_map=None, parent_label=None, radius_per_level=None):
-    if radius_per_level is None:
-        radius_per_level = [1, 3.5, 5, 5.5]  # Example widths: center, level 1, level 2
 
-    ax = ax or plt.subplot(111, projection='polar')
-    
-    if level == 0 and len(nodes) == 1:
+def sunburst(nodes, total=np.pi * 2, offset=0, level=0, ax=plt.subplot(111, projection='polar'), color_map=None, parent_label=None, radius_per_level=[1, 3.5, 5, 5.5]):
+    if level == 0: #draw inner circle
         ax.set_theta_direction(-1)
         ax.set_theta_zero_location('N')
         ax.set_axis_off()
@@ -23,6 +17,7 @@ def sunburst(nodes, total=np.pi * 2, offset=0, level=0, ax=None, color_map=None,
         ax.text(0, 0, label, ha='center', va='center',fontsize=5)
         sunburst(subnodes, total=value, level=level + 1, ax=ax, color_map=color_map,
                  parent_label=label, radius_per_level=radius_per_level)
+        
     elif nodes:
         d = np.pi * 2 / total
         local_offset = offset
@@ -52,7 +47,7 @@ def sunburst(nodes, total=np.pi * 2, offset=0, level=0, ax=None, color_map=None,
                 colors.append(generate_shade(base_color, factor=0.2 * level))
             else:
                 colors.append(base_color)
-
+        # Label text
         rects = ax.bar(values, heights, widths, bottoms, linewidth=0.5,
                        edgecolor='black', align='edge', color=colors)
         for rect, label in zip(rects, labels):
@@ -222,7 +217,6 @@ converted_data = [
     ])
 ]
 
-
 feelings_data = {
     "traurig": {
         "enttäuscht": ["ernüchtert", "unzufrieden"],
@@ -231,8 +225,7 @@ feelings_data = {
         "einsam": ["verlassen", "zurückgezogen"],
         "schuldbewusst": ["betreten", "verlegen"],
         "mutlos": ["resigniert", "verzagt"],
-        "bedrückt": ["niedergeschlagen", "betrübt"],
-        "sad": ["sad", "sad"]
+        "bedrückt": ["niedergeschlagen", "betrübt"]
     },
     "überrascht": {
         "erstaunt": ["fassungslos", "verwundert"],
@@ -276,23 +269,16 @@ feelings_data = {
     },
 }
 
-def get_color_map(top_emotions, cmap_name='tab10'):
-    cmap = cm.get_cmap(cmap_name, len(top_emotions))
-    return {emotion: mcolors.to_hex(cmap(i)) for i, emotion in enumerate(top_emotions)}
-
-top_emotions = ['traurig', 'glücklich', 'ängstlich', 'überrascht', 'ablehnend', 'ärgerlich']
-color_map = get_color_map(top_emotions)
-
 custom_color_map = {
-    'traurig': '#5569a4',     # blue
-    'glücklich': '#5bb666',   # green
-    'ängstlich': '#ef7931',   # orange
-    'überrascht': '#e5bf00',  # yellow
-    'ablehnend': '#8f5eb3',   # red
-    'ärgerlich': '#9d416e'    # brown
+    'traurig': '#5569a4',
+    'glücklich': '#5bb666',
+    'ängstlich': '#ef7931',
+    'überrascht': '#e5bf00',
+    'ablehnend': '#8f5eb3',
+    'ärgerlich': '#9d416e'    
 }
 sunburst(converted_data,color_map=custom_color_map)
+
 plt.rcParams["figure.figsize"] = (20, 20)
 plt.savefig('emotion_wheel_2.pdf',bbox_inches='tight', dpi=600)
-
 plt.show()
